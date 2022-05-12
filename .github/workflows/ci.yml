@@ -45,22 +45,22 @@ jobs:
         lein --version
 
     - name: Browser Tooling Versions (macos)
-      if: runner.os == 'macos'
+      if: matrix.os == 'macos'
       run: |
         chromedriver --version
-        msedgedriver --version
         geckodriver --version
+        msedgedriver --version
         safaridriver --version
 
     - name: Browser Tooling Versions (linux)
-      if: runner.os == 'ubuntu'
+      if: matrix.os == 'ubuntu'
       run: |
         chromedriver --version
         geckodriver --version
 
     - name: Browser Tooling Versions (linux)
-      if: runner.os == 'windows'
+      if: matrix.os == 'windows'
       run: |
         chromedriver --version
-        msedgedriver --version
         geckodriver --version
+        msedgedriver --version
