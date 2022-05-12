@@ -6,6 +6,7 @@ on:
     branches:
       - 'lread*'
 # TODO: add on: pull_request later
+# TODO: consider browser in matrix for parallel running (and I guess clearer at-a-glance of what we are testign)
 
 jobs:
   test:
@@ -42,3 +43,24 @@ jobs:
       run: |
         java --version
         lein --version
+
+    - name: Browser Tooling Versions (macos)
+      if: runner.os == 'macos'
+      run: |
+        chromedriver --version
+        msedgedriver --version
+        geckodriver --version
+        safaridriver --version
+
+    - name: Browser Tooling Versions (linux)
+      if: runner.os == 'ubuntu'
+      run: |
+        chromedriver --version
+        geckodriver --version
+
+    - name: Browser Tooling Versions (linux)
+      if: runner.os == 'windows'
+      run: |
+        chromedriver --version
+        msedgedriver --version
+        geckodriver --version
