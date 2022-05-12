@@ -58,7 +58,7 @@ jobs:
         chromedriver --version
         geckodriver --version
 
-    - name: Browser Tooling Versions (linux)
+    - name: Browser Tooling Versions (windows)
       if: matrix.os == 'windows'
       run: |
         chromedriver --version
