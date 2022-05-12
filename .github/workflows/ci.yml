@@ -14,8 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ windows, ubuntu, macos ]
-
-  name: ${{ matrix.os }}
+    name: ${{ matrix.os }}
 
   steps:
     - uses: actions/checkout@v3
