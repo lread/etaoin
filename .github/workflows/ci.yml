@@ -16,29 +16,29 @@ jobs:
         os: [ windows, ubuntu, macos ]
     name: ${{ matrix.os }}
 
-  steps:
-  - uses: actions/checkout@v3
+    steps:
+    - uses: actions/checkout@v3
 
-  - name: Clojure deps cache
-    uses: actions/cache@v3
-    with:
-      path: |
-        ~/.m2/repository
-      key: ${{ runner.os }}-leindeps-${{ hashFiles('project.clj') }}
-      restore-keys: ${{ runner.os }}-leindeps-
+    - name: Clojure deps cache
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.m2/repository
+        key: ${{ runner.os }}-leindeps-${{ hashFiles('project.clj') }}
+        restore-keys: ${{ runner.os }}-leindeps-
 
-  - name: "Setup Java"
-    uses: actions/setup-java@v3
-    with:
-      distribution: 'temurin'
-      java-version: 11
+    - name: "Setup Java"
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: 11
 
-  - name: Install Clojure tools
-    uses: DeLaGuardo/setup-clojure@5.1
-    with:
-      lein: 'latest'
+    - name: Install Clojure tools
+      uses: DeLaGuardo/setup-clojure@5.1
+      with:
+        lein: 'latest'
 
-  - name: Tools versions
-    run: |
-      java --version
-      lein --version
+    - name: Tools versions
+      run: |
+        java --version
+        lein --version
