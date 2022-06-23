@@ -129,7 +129,7 @@ Notes:
                     ;; ubuntu seems to be consitently good with our default timeout
                     (and (System/getenv "GITHUB_ACTIONS")
                          (some #{(os/get-os)} [:win :mac]))
-                    (assoc "ETAOIN_WAIT_TIMEOUT" 20)
+                    (assoc "ETAOIN_WAIT_TIMEOUT" 60)
 
                     virtual-display?
                     (assoc "DISPLAY" ":99.0"))
