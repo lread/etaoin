@@ -51,15 +51,32 @@
 
 (defn fixture-browsers [f]
   (let [url (-> "html/test.html" io/resource str)]
-    (doseq [type drivers]
-      (e/with-driver type (get default-opts type {}) driver
-        (e/go driver url)
-        (e/wait-visible driver {:id :document-end})
-        (binding [*driver* driver
-                  test-report/*context* (format "[%s][to=%s]"
-                                                (name type) e/*wait-timeout*)]
-          (testing (name type)
-            (f)))))))
+    (doseq [type drivers
+            :let [driver-name (name type)
+                  out-log (format "target/test-out-%s.log" driver-name)
+                  err-log (format "target/test-err-%s.log" driver-name)]]
+      (fs/create-dirs "target")
+      (fs/delete-if-exists out-log)
+      (fs/delete-if-exists err-log)
+      (try
+        (e/with-driver type (merge (get default-opts type {})
+                                   {:log-stdout out-log
+                                    :log-stderr err-log}) driver
+          (e/go driver url)
+          (e/wait-visible driver {:id :document-end})
+          (binding [*driver* driver
+                    test-report/*context* (format "[%s][to=%s]"
+                                                  (name type) e/*wait-timeout*)]
+            (testing (name type)
+              (f))))
+        (finally
+          (do
+            (println "-[WebDriver err log dump]-")
+            (when (fs/exists? err-log )
+              (println (slurp err-log)))
+            (println "-[WebDriver out log dump]-")
+            (when (fs/exists? out-log)
+              (println (slurp out-log)))))))))
 
 (use-fixtures
   :each
