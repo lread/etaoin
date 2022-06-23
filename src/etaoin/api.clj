@@ -2495,9 +2495,9 @@
 (defn- driver-pred [f driver & args]
   (when-let [process (:process driver)]
     (if (.isAlive process)
-      (do (println "Alive")
-          (apply f driver args))
-      (throw (ex-info (format "WebDriver process unexpectedly exited with value: %d" (.exitValue process)) {})))))
+      (println "Alive")
+      (throw (ex-info (format "WebDriver process unexpectedly exited with value: %d" (.exitValue process)) {}))))
+  (apply f driver args))
 
 (defn wait-exists
   "Waits until `driver` finds element [[exists?]] via `q`.
