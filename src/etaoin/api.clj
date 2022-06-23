@@ -2410,8 +2410,15 @@
 ;; wait functions
 ;;
 
-(def ^:dynamic *wait-timeout* "Maximum seconds to wait, default for `wait-*` functions." 7)
-(def ^:dynamic *wait-interval* "Frequency in seconds to check if we should still wait, default for `wait-*` functions." 0.33)
+(defn- env-wait-timeout [] (when-let [tos (System/getenv "ETAOIN_WAIT_TIMEOUT")]
+                             (Double/parseDouble tos)))
+
+(def ^:dynamic *wait-timeout*
+  "Maximum seconds to wait, default for `wait-*` functions."
+  (or (env-wait-timeout) 7))
+(def ^:dynamic *wait-interval*
+  "Frequency in seconds to check if we should still wait, default for `wait-*` functions."
+  0.33)
 
 (defmacro with-wait-timeout
   "Execute `body` with a [[*wait-timeout*]] of `seconds`"

@@ -31,7 +31,8 @@
         (binding [*driver*         driver
                   *base-url*       base-url
                   *test-file-path* test-file-path
-                  test-report/*context* (name type)]
+                  test-report/*context* (format "[%s][to=%s]"
+                                                (name type) e/*wait-timeout*)]
           (testing (name type)
             (f)))))))
 

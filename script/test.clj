@@ -5,6 +5,7 @@
             [clojure.string :as string]
             [doric.core :as doric]
             [helper.main :as main]
+            [helper.os :as os]
             [helper.shell :as shell]
             [lread.status-line :as status]))
 
@@ -122,6 +123,13 @@ Notes:
                              "ETAOIN_TEST_DRIVERS"
                              "ETAOIN_IDE_TEST_DRIVERS")
                            (mapv keyword browsers))
+
+                    ;; give a generous amount of time on mac and win on GitHub Actions, this
+                    ;; might be a bit coarse as the main slow-suspect seems to be safaridriver on macOS
+                    ;; ubuntu seems to be consitently good with our default timeout
+                    (and (System/getenv "GITHUB_ACTIONS")
+                         (some #{(os/get-os)} [:win :mac]))
+                    (assoc "ETAOIN_WAIT_TIMEOUT" 20)
 
                     virtual-display?
                     (assoc "DISPLAY" ":99.0"))

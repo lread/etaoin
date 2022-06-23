@@ -49,7 +49,6 @@
 
 (def ^:dynamic *driver*)
 
-;; tests failed in safari 13.1.1 https://bugs.webkit.org/show_bug.cgi?id=202589 use STP newest
 (defn fixture-browsers [f]
   (let [url (-> "html/test.html" io/resource str)]
     (doseq [type drivers]
@@ -57,7 +56,8 @@
         (e/go driver url)
         (e/wait-visible driver {:id :document-end})
         (binding [*driver* driver
-                  test-report/*context* (name type)]
+                  test-report/*context* (format "[%s][to=%s]"
+                                                (name type) e/*wait-timeout*)]
           (testing (name type)
             (f)))))))
 
