@@ -2215,6 +2215,7 @@
   [driver]
   (when (:webdriver-url driver)
     (throw (ex-info "Not supported for driver using :webdriver-url" {})))
+  (println "Connectable check")
   (util/connectable? (:host driver)
                      (:port driver)))
 
@@ -2467,7 +2468,6 @@
     - `:timeout` wait limit in seconds, [[*wait-timeout*]] by default;
     - `:interval` how long to wait between calls, [[*wait-interval*]] by default;
     - `:message` a message that becomes a part of exception when timeout is reached."
-
   ([pred]
    (wait-predicate pred {}))
   ([pred opts]
@@ -2485,11 +2485,19 @@
                 :predicate pred}))
      (when-not (with-http-error
                  (pred))
+       (println "retrying" pred)
        (wait interval)
        (recur pred (assoc
                      opts
                      :time-rest (- time-rest interval)
                      :times (inc times)))))))
+
+(defn- driver-pred [f driver & args]
+  (when-let [process (:process driver)]
+    (if (.isAlive process)
+      (do (println "Alive")
+          (apply f driver args))
+      (throw (ex-info (format "WebDriver process unexpectedly exited with value: %d" (.exitValue process)) {})))))
 
 (defn wait-exists
   "Waits until `driver` finds element [[exists?]] via `q`.
@@ -2498,7 +2506,7 @@
 
   [driver q & [opts]]
   (let [message (format "Wait until %s element exists" q)]
-    (wait-predicate #(exists? driver q)
+    (wait-predicate #(driver-pred exists? driver q)
                     (merge {:message message} opts))))
 
 (defn wait-absent
@@ -2609,7 +2617,7 @@
     (throw (ex-info "Not supported for driver using :webdriver-url" {})))
   (log/debugf "Waiting until %s:%s is running"
               (:host driver) (:port driver))
-  (wait-predicate #(running? driver) opts))
+  (wait-predicate #(driver-pred running? driver) opts))
 
 ;;
 ;; visible actions
@@ -3582,7 +3590,6 @@
   Closes the current session that is stored in the driver if it still exists.
   Removes the session from `driver`."
   [driver]
-
   (try (delete-session driver)
        (catch Exception e
          (when (not (= 404 (:status (ex-data e))))
