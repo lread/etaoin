@@ -3496,6 +3496,28 @@
                                        :env        env})]
     (assoc driver :env env :process process)))
 
+(defn- -run-driver-with-retry [driver opts]
+  (let [max-tries 5]
+    (loop [try-num 1
+           ex nil]
+      ;; crude for now... really only want to retry if launched process is not alive
+      (println "+++++++++" try-num max-tries)
+      (if (> try-num max-tries)
+        (throw (ex-info (format "gave up trying to launch %s after %d tries" (:type driver) max-tries) {} ex))
+        (do
+          (when ex
+            (log/warnf ex "unexpected exception occurred launching %s, try %d of %d"
+                       (:type driver) (dec try-num) max-tries)
+            (Thread/sleep 500))
+          (let [driver (-run-driver driver opts)
+                res (try
+                      (wait-running driver)
+                      (catch Exception e
+                        {:exception e}))]
+            (if (not (:exception res))
+              driver
+              (recur (inc try-num) (:exception res)))))))))
+
 (defn- -connect-driver
   "Connects to a running Webdriver server.
 
@@ -3547,8 +3569,7 @@
   to the browser's process.
 
   See https://www.w3.org/TR/webdriver/#capabilities"
-  [driver & [{:keys [webdriver-url
-                     url
+  [driver & [{:keys [url
                      size
                      args
                      prefs
@@ -3559,8 +3580,6 @@
                      capabilities
                      load-strategy
                      desired-capabilities]}]]
-  (when (not webdriver-url)
-    (wait-running driver))
   (let [type          (:type driver)
         caps          (get-in defaults [type :capabilities])
         proxy         (proxy-env proxy)
@@ -3619,7 +3638,7 @@
    (cond-> type
      true                      (-create-driver opts)
      (and (not host)
-          (not webdriver-url)) (-run-driver opts)
+          (not webdriver-url)) (-run-driver-with-retry opts)
      true                      (-connect-driver opts))))
 
 (defn quit
