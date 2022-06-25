@@ -1,13 +1,14 @@
 {:paths ["src" "resources"]
  :deps {org.clojure/clojure {:mvn/version "1.9.0"} ;; min clojure version
         babashka/fs {:mvn/version "0.1.6"}
+        babashka/process {:mvn/version "0.1.4"}
         clj-http/clj-http {:mvn/version "3.12.3"} ;; for jvm use
         org.clj-commons/clj-http-lite {:mvn/version "0.4.392"} ;; for babashka use
         cheshire/cheshire {:mvn/version "5.11.0"}
         org.clojure/tools.cli {:mvn/version "1.0.206"}
         org.clojure/tools.logging {:mvn/version "1.2.4"}}
  :aliases
- {:1.11 {:replace-deps {org.clojure/clojure {:mvn/version "1.11.1"}}}
+ {:1.11 {:extra-deps {org.clojure/clojure {:mvn/version "1.11.1"}}}
   :debug {:extra-paths ["env/dev/resources"]}
   :test {:extra-paths ["test" "env/test/resources"]
          :extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}

@@ -2494,9 +2494,9 @@
 
 (defn- driver-pred [f driver & args]
   (when-let [process (:process driver)]
-    (if (.isAlive process)
+    (if (proc/alive? process)
       (println "Alive")
-      (throw (ex-info (format "WebDriver process unexpectedly exited with value: %d" (.exitValue process)) {}))))
+      (throw (ex-info (format "WebDriver process unexpectedly exited with value: %d" (:exit (proc/result process))) {}))))
   (apply f driver args))
 
 (defn wait-exists
@@ -3491,8 +3491,8 @@
                     download-dir     (drv/set-download-dir download-dir))
         proc-args (drv/get-args driver)
         _         (log/debugf "Starting process: %s" (str/join \space proc-args))
-        process   (proc/run proc-args {:log-stdout log-stdout
-                                       :log-stderr log-stderr
+        process   (proc/run proc-args {:log-stdout (or log-stdout :inherit)
+                                       :log-stderr (or log-stderr :inherit)
                                        :env        env})]
     (assoc driver :env env :process process)))
 
