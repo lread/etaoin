@@ -2471,26 +2471,33 @@
   ([pred]
    (wait-predicate pred {}))
   ([pred opts]
-   (let [timeout   (get opts :timeout *wait-timeout*) ;; refactor this (call for java millisec)
-         time-rest (get opts :time-rest timeout)
-         interval  (get opts :interval *wait-interval*)
-         times     (get opts :times 0)
-         message   (get opts :message)]
-     (when (< time-rest 0)
-       (throw+ {:type      :etaoin/timeout
-                :message   message
-                :timeout   timeout
-                :interval  interval
-                :times     times
-                :predicate pred}))
-     (when-not (with-http-error
-                 (pred))
-       (println "retrying" pred)
-       (wait interval)
-       (recur pred (assoc
-                     opts
-                     :time-rest (- time-rest interval)
-                     :times (inc times)))))))
+   (let [time-start (System/currentTimeMillis)]
+     (loop [opts opts]
+       (let [timeout   (get opts :timeout *wait-timeout*) ;; refactor this (call for java millisec)
+             time-rest (get opts :time-rest timeout)
+             interval  (get opts :interval *wait-interval*)
+             times     (get opts :times 0)
+             message   (get opts :message)]
+         (when (< time-rest 0)
+           (throw+ {:type      :etaoin/timeout
+                    :message   message
+                    :timeout   timeout
+                    :interval  interval
+                    :times     times
+                    :predicate pred
+                    :elapsed-ms (- (System/currentTimeMillis) time-start)}))
+         (if-not (with-http-error
+                   (pred))
+           (do (println "retrying:" message)
+               (wait interval)
+               (recur (assoc
+                        opts
+                        :time-start time-start
+                        :time-rest (- time-rest interval)
+                        :times (inc times))))
+           (println (format "DONE: [%s][elapsed-ms %d]"
+                            message (- (System/currentTimeMillis) time-start)))))))))
+
 
 (defn- driver-pred [f driver & args]
   (when-let [process (:process driver)]
@@ -2617,7 +2624,7 @@
     (throw (ex-info "Not supported for driver using :webdriver-url" {})))
   (log/debugf "Waiting until %s:%s is running"
               (:host driver) (:port driver))
-  (wait-predicate #(driver-pred running? driver) opts))
+  (wait-predicate #(driver-pred running? driver) (merge {:message "Wait until driver is running"} opts)))
 
 ;;
 ;; visible actions
