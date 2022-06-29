@@ -7,7 +7,6 @@
    [clojure.string :as str]
    [clojure.test :refer [deftest is testing use-fixtures]]
    [etaoin.api :as e]
-   [etaoin.impl.proc :as proc]
    [etaoin.impl.util :as util]
    [etaoin.test-report :as test-report]
    [slingshot.slingshot :refer [try+]]))
@@ -61,14 +60,7 @@
                   test-report/*context* (format "[%s][to=%s]"
                                                 (name type) e/*wait-timeout*)]
           (testing (name type)
-            (try
-              (f)
-              (catch Throwable e
-                (println "Caught exception to take a peek at driver")
-                (println "- process alive?" (proc/alive? (:process driver)))
-                (when (not (proc/alive? (:process driver)))
-                  (println "- process result:" (proc/result (:process driver))))
-                (throw e)))))))))
+            (f)))))))
 
 (use-fixtures
   :each

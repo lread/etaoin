@@ -3,6 +3,7 @@
    [cheshire.core :as json]
    [clojure.string :as str]
    [clojure.tools.logging :as log]
+   [etaoin.impl.proc :as proc]
    [etaoin.impl.util :as util]
    #?(:bb [clj-http.lite.client :as client]
       :clj [clj-http.client :as client])
@@ -74,7 +75,7 @@
 ;; client
 ;;
 
-(defn call
+(defn call*
   [{driver-type :type :keys [host port webdriver-url] :as driver}
    method path-args payload]
   (let [path   (get-url-path path-args)
@@ -120,3 +121,15 @@
 
       :else
       body)))
+
+(defn call [driver method path-args payload]
+  (try
+    (call* driver method path-args payload)
+    (catch Throwable e
+      ;; report on driver state
+      (when-let [process (:process driver)]
+        (println "Caught exception to report on driver process:")
+        (println "- process is running?" (proc/alive? process))
+        (when (not (proc/alive? process))
+          (println "- process result: " (proc/result process))))
+      (throw e))))
